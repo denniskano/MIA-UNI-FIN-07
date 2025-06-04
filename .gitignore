@@ -1,0 +1,14 @@
+# Compiled source #
+###################
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.gz
+*.toc
+*.pdf
+quarto_exam.md
+Agente_Quarto_ontologia.md
+venv/
+quarto-agent/
+quarto-agent2/
