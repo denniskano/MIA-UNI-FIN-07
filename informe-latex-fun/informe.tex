@@ -227,6 +227,447 @@ Después de colocar la pieza en la mejor casilla, el agente debe seleccionar la 
 
 Una vez decidida la jugada $(pieza\_activa, casilla\_sel)$, se envía la orden al actuador (brazo robótico o interfaz gráfica) para colocar la pieza en la casilla. A continuación, se actualiza la lista de piezas disponibles y la pieza activa pasa a ser el identificador $p_{sel}$ que se dio al oponente.
 
+
+\section{Medida de Racionalidad}
+
+Para evaluar la racionalidad del agente (su capacidad de tomar decisiones autónomas cercanas a un comportamiento ideal), proponemos los siguientes estadísticos:
+
+\subsection{Tasa de victoria}
+
+\textbf{Descripción:} Porcentaje de partidas ganadas frente a oponentes de referencia. \\
+\textbf{Fórmula:}
+\begin{equation}
+	\text{Tasa de victoria} = \frac{\text{Victorias}}{\text{Total de partidas}} \times 100\%
+\end{equation}
+\textbf{Justificación:} Mide la eficacia competitiva del agente. \\
+\textbf{Fuente:} \cite{herik2002games}
+
+\subsection{Razón de optimalidad de movimiento}
+
+\textbf{Descripción:} Porcentaje de movimientos que coinciden con la acción óptima de un minimax exhaustivo. \\
+\textbf{Fórmula:}
+\begin{equation}
+	\text{Razón de optimalidad} = \frac{\text{Movimientos óptimos}}{\text{Movimientos evaluados}} \times 100\%
+\end{equation}
+\textbf{Justificación:} Evalúa cuán frecuentemente el agente toma decisiones óptimas. \\
+\textbf{Fuente:} \cite{schaeffer1997chinook}
+
+\subsection{Regret promedio}
+
+\textbf{Descripción:} Diferencia entre el valor de la acción óptima y la acción elegida. \\
+\textbf{Fórmula:}
+\begin{equation}
+	\text{Regret promedio} = \frac{1}{N} \sum_{i=1}^{N} \left(V^*(s_i) - V_A(s_i)\right)
+\end{equation}
+\textbf{Justificación:} Cuanto menor, mayor racionalidad. \\
+\textbf{Fuente:} \cite{savage1954foundations}
+
+\subsection{Profundidad de búsqueda promedio}
+
+\textbf{Descripción:} Promedio de niveles explorados en el árbol de búsqueda. \\
+\textbf{Fórmula:}
+\begin{equation}
+	\text{Profundidad promedio} = \frac{1}{N} \sum_{i=1}^{N} d_i
+\end{equation}
+\textbf{Fuente:} \cite{russell2016artificial}
+
+\subsection{Nodos expandidos promedio por turno}
+
+\textbf{Descripción:} Media de nodos evaluados por turno. \\
+\textbf{Fórmula:}
+\begin{equation}
+	\text{Nodos promedio} = \frac{1}{N} \sum_{i=1}^{N} n_i
+\end{equation}
+\textbf{Fuente:} \cite{russell2016artificial}
+
+\subsection{Tiempo de decisión promedio}
+
+\textbf{Descripción:} Tiempo promedio en tomar una decisión. \\
+\textbf{Fórmula:}
+\begin{equation}
+	\text{Tiempo promedio} = \frac{1}{N} \sum_{i=1}^{N} t_i
+\end{equation}
+\textbf{Fuente:} \cite{campbell2002deep}
+
+\subsection{Tasa de empates}
+
+\textbf{Descripción:} Proporción de partidas empatadas. \\
+\textbf{Fórmula:}
+\begin{equation}
+	\text{Tasa de empates} = \frac{\text{Empates}}{\text{Total de partidas}} \times 100\%
+\end{equation}
+\textbf{Fuente:} \cite{silver2016mastering}
+
+\subsection*{Resumen de métricas}
+
+\begin{table}[h]
+	\centering
+	\caption{Métricas de racionalidad propuestas}
+	\begin{tabular}{|l|c|c|}
+		\hline
+		\textbf{Métrica} & \textbf{Fórmula} & \textbf{Fuente} \\
+		\hline
+		Tasa de victoria & $\frac{\#\text{Victorias}}{\#\text{Partidas}} \times 100\%$ & \cite{herik2002games} \\
+		Optimalidad de movimiento & $\frac{\#\text{Óptimos}}{\#\text{Evaluados}} \times 100\%$ & \cite{schaeffer1997chinook} \\
+		Regret promedio & $\frac{1}{N} \sum(V^* - V_A)$ & \cite{savage1954foundations} \\
+		Profundidad promedio & $\frac{1}{N} \sum d_i$ & \cite{russell2016artificial} \\
+		Nodos promedio & $\frac{1}{N} \sum n_i$ & \cite{russell2016artificial} \\
+		Tiempo promedio & $\frac{1}{N} \sum t_i$ & \cite{campbell2002deep} \\
+		Tasa de empates & $\frac{\#\text{Empates}}{\#\text{Partidas}} \times 100\%$ & \cite{silver2016mastering} \\
+		\hline
+	\end{tabular}
+\end{table}
+
+
+
+\section{Plan de Implementación del Agente para el Juego Quarto}
+
+\subsection{Descripción General}
+
+Este documento describe el plan de implementación de un agente jugador de \textbf{Quarto} utilizando técnicas de búsqueda adversarial. El agente cuenta con dos modalidades de interacción: una interfaz gráfica basada en \textit{Tkinter} y una interfaz de línea de comandos para propósitos de depuración y análisis.
+
+\subsection{Componentes Principales}
+
+\subsubsection{Estructura de Clases}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\linewidth]{diagrama-clases.png}
+	\caption{Diagrama de clases del agente para el juego Quarto}
+	\label{fig:diagrama-clases}
+\end{figure}
+
+\section{Diseño del Agente}
+
+\subsection{Tipo de Agente}
+\begin{itemize}
+	\item \textbf{Clasificación Principal}: Agente Proactivo
+	\item \textbf{Clasificación Secundaria}: Agente basado en Objetivos
+	\begin{itemize}
+		\item Utiliza minimax con poda alfa-beta
+		\item Mantiene representación interna del estado
+		\item Evalúa estados futuros para lograr victoria
+	\end{itemize}
+\end{itemize}
+
+\subsection{Características del Entorno}
+\begin{enumerate}
+	\item \textbf{Accesibilidad}: Accesible. Estado completo del tablero visible, atributos de todas las piezas conocidos, fase actual del juego clara.
+	\item \textbf{Determinismo}: Determinista. Acciones con resultados predecibles.
+	\item \textbf{Estructura de Episodios}: Secuencial. Historia del juego impacta decisiones.
+	\item \textbf{Dinamismo}: Estático. Solo cambia por acciones del agente oponente.
+	\item \textbf{Espacio de Estados}: Discreto. Posiciones y combinaciones finitas.
+\end{enumerate}
+
+\section{Interfaces de Usuario}
+
+\subsection{Interfaz Gráfica (Tkinter)}
+\begin{itemize}
+	\item \textbf{Componentes Visuales}: Paneles para tablero, piezas, estado y estadísticas.
+	\item \textbf{Interacción}: Mouse para seleccionar y colocar piezas, botones para reiniciar o salir.
+	\item \textbf{Código Representativo}:
+	\begin{verbatim}
+		class InterfazTK:
+		def __init__(self):
+		self.root = None
+		self.canvas_tablero = None
+		self.canvas_piezas = None
+		self.stats_widgets = {}
+		self.historial_jugadas = []
+		
+		def _dibujar_tablero(self):
+		# Renderiza el tablero 4x4 y piezas
+		pass
+		
+		def _dibujar_piezas(self):
+		# Muestra piezas disponibles
+		pass
+		
+		def _update_info(self):
+		# Actualiza estado e indicadores
+		pass
+	\end{verbatim}
+\end{itemize}
+
+\subsection{Interfaz CLI}
+\begin{itemize}
+	\item \textbf{Visualización}: ASCII del tablero, lista de piezas y estado del juego.
+	\item \textbf{Comandos}: \texttt{colocar X Y}, \texttt{seleccionar N}, \texttt{mostrar}, \texttt{salir}.
+\end{itemize}
+
+\section{Sensores y Percepciones}
+
+\subsection{Sensores}
+\begin{itemize}
+	\item \textbf{Sensor de Tablero}: Lee posiciones y actualiza matriz 4x4.
+	\item \textbf{Seguidor de Piezas}: Rastrea atributos y estado de disponibilidad.
+\end{itemize}
+
+\subsection{Percepciones}
+\begin{itemize}
+	\item \textbf{Estructura}: Matriz 4x4, lista de piezas disponibles, pieza activa, fase del juego.
+	\item \textbf{Muestreo}: Frecuencia 1/T Hz, canales: tablero, piezas, fase.
+\end{itemize}
+
+\section{Monitoreo y Estadísticas}
+
+\subsection{Estadísticas en Tiempo Real}
+Decisiones tomadas, tiempo promedio, nodos explorados, podas realizadas.
+
+\subsection{Capturas y Logs}
+Capturas automáticas, logs de jugadas y estadísticas finales.
+
+\section{Estructura de Archivos}
+\begin{verbatim}
+	quarto/
+	    src/
+	        juego/
+				__init__.py
+				tablero.py
+				pieza.py
+				estado.py
+			agente/
+				__init__.py
+				agente.py
+			interfaces/
+				__init__.py
+				tk_gui.py
+				cli.py
+			utils/
+				__init__.py
+				constantes.py
+		tests/
+			test_juego.py
+			test_agente.py
+			test_interfaces.py
+		README.md
+		requirements.txt
+\end{verbatim}
+
+\section{Dependencias}
+\subsection{Bibliotecas}
+Tkinter, PIL, Time, Logging
+
+\subsection{Herramientas}
+Python 3.8+, pytest, Black, pylint
+
+\section{Secuencia de Implementación}
+
+\subsection{Fase 1: Lógica Base}
+\begin{itemize}
+	\item Implementación del Tablero
+	\item Clase Pieza con atributos
+	\item Gestión básica de estado
+	\item Verificación de victoria
+\end{itemize}
+
+\subsection{Fase 2: Interfaces}
+\begin{itemize}
+	\item Implementación CLI
+	\item GUI con Tkinter
+	\item Sistema de estadísticas
+	\item Capturas y logs
+\end{itemize}
+
+\subsection{Fase 3: Agente}
+\begin{itemize}
+	\item Sistema de percepción
+	\item Validación de acciones
+	\item Representación de estado
+	\item Toma de decisiones
+\end{itemize}
+
+\subsection{Fase 4: Optimización}
+\begin{itemize}
+	\item Eficiencia de memoria
+	\item Poda de búsqueda
+	\item Ajuste de heurísticas
+	\item Métricas de rendimiento
+\end{itemize}
+
+
+\section{Manual del Proyecto: Juego Quarto con Agente Inteligente}
+
+\subsection{Resumen}
+Implementación del juego Quarto con un agente inteligente basado en búsqueda adversarial usando minimax con poda alfa-beta.
+
+\subsection{Características Principales}
+\begin{itemize}
+	\item Interfaz gráfica con Tkinter
+	\item Interfaz de línea de comandos
+	\item Agente inteligente proactivo basado en objetivos
+	\item Búsqueda adversarial con minimax y poda alfa-beta
+	\item Frecuencia de muestreo configurable
+	\item Estadísticas de rendimiento del agente integradas
+	\item Capturas automáticas del juego
+\end{itemize}
+
+\subsection{Requisitos}
+\begin{itemize}
+	\item Python 3.8 o superior
+	\item Paquetes requeridos:
+	\begin{itemize}
+		\item \texttt{pillow} (para capturas)
+		\item \texttt{pytest} (para pruebas)
+		\item \texttt{black} (para formateo)
+		\item \texttt{pylint} (para análisis de código)
+	\end{itemize}
+\end{itemize}
+
+\subsection{Instalación}
+\begin{enumerate}
+	\item Clonar el repositorio:
+	\begin{verbatim}
+		git clone <url-repositorio>
+		cd quarto
+	\end{verbatim}
+	
+	\item (Opcional) Crear un entorno virtual:
+	\begin{verbatim}
+		python -m venv venv
+		source venv/bin/activate  # Linux/Mac
+		venv\Scripts\activate     # Windows
+	\end{verbatim}
+	
+	\item Instalar dependencias:
+	\begin{verbatim}
+		pip install -r requirements.txt
+	\end{verbatim}
+\end{enumerate}
+
+\subsection{Modo de Uso}
+
+\paragraph{Ejecución por defecto:}
+\begin{verbatim}
+	python main.py
+\end{verbatim}
+
+\paragraph{Modo CLI:}
+\begin{verbatim}
+	python main.py --modo cli
+\end{verbatim}
+
+\paragraph{Opciones adicionales:}
+\begin{itemize}
+	\item \texttt{--modo}: Selecciona el modo de interfaz (tk/cli)
+	\item \texttt{--frecuencia}: Frecuencia del agente en Hz (por defecto: 1.0)
+	\item \texttt{--primer\_jugador}: Jugador que inicia la partida (humano/agente)
+\end{itemize}
+
+\textbf{Ejemplos:}
+\begin{verbatim}
+	python main.py --modo tk --primer_jugador agente
+	python main.py --modo tk --frecuencia 0.5
+\end{verbatim}
+
+\subsection{Reglas del Juego}
+
+\subsubsection{Tablero y Piezas}
+\begin{itemize}
+	\item Tablero de 4x4 casillas
+	\item 16 piezas únicas con 4 atributos binarios:
+	\begin{itemize}
+		\item Tamaño: Grande/Pequeña
+		\item Color: Roja/Azul
+		\item Forma: Redonda/Cuadrada
+		\item Solidez: Sólida/Hueca
+	\end{itemize}
+\end{itemize}
+
+\subsubsection{Mecánica de Juego}
+\begin{enumerate}
+	\item Los jugadores alternan turnos
+	\item Cada turno tiene dos fases:
+	\begin{itemize}
+		\item \textbf{Colocar:} Poner la pieza activa en el tablero
+		\item \textbf{Seleccionar:} Elegir la próxima pieza para el rival
+	\end{itemize}
+\end{enumerate}
+
+\subsubsection{Condición de Victoria}
+Completar una línea de 4 piezas (horizontal, vertical o diagonal) con al menos un atributo común. Si el tablero se llena sin victoria, se declara empate.
+
+\subsection{Interfaz Gráfica}
+
+\paragraph{Disposición:}
+\begin{itemize}
+	\item Panel izquierdo: Tablero 4x4
+	\item Panel central: Piezas disponibles y log
+	\item Panel derecho: Estado del juego y estadísticas
+\end{itemize}
+
+\paragraph{Controles:}
+\begin{itemize}
+	\item Click izquierdo para seleccionar o colocar piezas
+	\item Botón Reiniciar: Nueva partida
+	\item Botón Salir: Cierra la aplicación
+\end{itemize}
+
+\paragraph{Funciones destacadas:}
+\begin{itemize}
+	\item Resaltado visual de selección
+	\item Indicadores de fase y turno
+	\item Estadísticas en tiempo real
+	\item Capturas automáticas (opcional)
+	\item Guardado de logs y estadísticas
+\end{itemize}
+
+\subsection{Interfaz de Línea de Comandos}
+
+\paragraph{Comandos disponibles:}
+\begin{itemize}
+	\item \texttt{mostrar}: Ver estado actual
+	\item \texttt{seleccionar N}: Seleccionar pieza número N
+	\item \texttt{colocar F C}: Colocar pieza en fila F, columna C
+	\item \texttt{ayuda}: Mostrar instrucciones
+	\item \texttt{salir}: Terminar el juego
+\end{itemize}
+
+\subsection{Agente Inteligente}
+
+\paragraph{Características:}
+\begin{itemize}
+	\item Agente proactivo basado en objetivos
+	\item Estrategia: minimax con poda alfa-beta
+	\item Percepción del entorno mediante muestreo configurable
+\end{itemize}
+
+\paragraph{Heurísticas:}
+\begin{itemize}
+	\item Evaluación de líneas con atributos compartidos
+	\item Bloqueo de posibles victorias del oponente
+	\item Maximización de oportunidades propias
+\end{itemize}
+
+\subsection{Estructura del Proyecto}
+\begin{verbatim}
+	quarto/
+		src/
+			juego/
+				pieza.py
+				tablero.py
+				estado.py
+			agente/
+				agente.py
+			interfaces/
+				tk_gui.py
+				cli.py
+		tests/
+		main.py
+		requirements.txt
+		README.md
+\end{verbatim}
+
+\subsection{Contribución}
+\begin{enumerate}
+	\item Crear un fork del repositorio
+	\item Crear una rama para tu nueva característica
+	\item Realizar commits con los cambios
+	\item Crear un pull request para revisión
+\end{enumerate}
+
+
+
 \section{Conclusiones}
 
 Se ha presentado un marco completo para el desarrollo de un agente inteligente para el juego Quarto, incluyendo una representación ontológica detallada del dominio y un diseño de arquitectura basado en búsqueda adversarial. La implementación del algoritmo minimax con poda Alfa-Beta, junto con funciones heurísticas específicas, permite al agente tomar decisiones estratégicas eficientes en tiempo real.
@@ -234,16 +675,38 @@ Se ha presentado un marco completo para el desarrollo de un agente inteligente p
 La complejidad combinatoria del Quarto requiere el uso de técnicas de poda y limitación de profundidad para hacer viable la búsqueda en el espacio de estados. El enfoque propuesto integra exitosamente la percepción del estado físico del juego con el razonamiento simbólico y la ejecución de acciones.
 
 \begin{thebibliography}{9}
-
-\bibitem{muller2009}
-B. Müller, \textit{Quarto – Análisis del juego y estrategias de búsqueda}. Barcelona: Ediciones Gigamic, 2009.
-
-\bibitem{russell2016}
-S. J. Russell and P. Norvig, \textit{Artificial Intelligence: A Modern Approach}, 3rd ed. Pearson, 2016.
-
-\bibitem{santana2012}
-J. Santana and M. López, "Algoritmos adversariales para juegos de mesa: Aplicación en Quarto," \textit{Revista Iberoamericana de Inteligencia Artificial}, vol. 14, no. 2, pp. 45–58, 2012.
-
+	
+	\bibitem{muller2009}
+	B. Müller, \textit{Quarto – Análisis del juego y estrategias de búsqueda}. Barcelona: Ediciones Gigamic, 2009.
+	
+	\bibitem{russell2016}
+	S. J. Russell and P. Norvig, \textit{Artificial Intelligence: A Modern Approach}, 3rd ed. Pearson, 2016.
+	
+	\bibitem{savage1954}
+	L. J. Savage, \textit{The Foundations of Statistics}. New York: Wiley, 1954.
+	
+	\bibitem{campbell2002}
+	M. Campbell, A. J. Hoane, and F. H. Hsu, \textit{Deep Blue}. Artificial Intelligence, vol. 134, no. 1–2, pp. 57–83, 2002.
+	
+	\bibitem{schaeffer1997}
+	J. Schaeffer, R. Lake, P. Lu, and M. Bryant, \textit{Chinook: The world man–machine checkers champion}. AI Magazine, vol. 18, no. 1, pp. 21–29, 1997.
+	
+	\bibitem{silver2016}
+	D. Silver et al., \textit{Mastering the game of Go with deep neural networks and tree search}. Nature, vol. 529, no. 7587, pp. 484–489, 2016.
+	
+	\bibitem{herik2002}
+	H. J. van den Herik, J. W. H. M. Uiterwijk, and J. van Rijswijck, \textit{Games solved: A success story}. International Computer Games Association Journal, vol. 25, no. 3, pp. 178–189, 2002.
+	
+	\bibitem{santana2012}
+	J. Santana and M. López, \textit{Algoritmos adversariales para juegos de mesa: Aplicación en Quarto}. Revista Iberoamericana de Inteligencia Artificial, vol. 14, no. 2, pp. 45–58, 2012.
+	
 \end{thebibliography}
+
+
+
+
+
+
+
 
 \end{document}
