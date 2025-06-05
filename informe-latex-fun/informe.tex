@@ -10,7 +10,7 @@
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{url}
-
+\graphicspath{{img/}}
 \begin{document}
 
 \title{Agente Inteligente para el Juego Quarto:\\
@@ -56,17 +56,39 @@ El Quarto se juega en un \textbf{tablero físico de 4×4 casillas} con 16 piezas
 \item \textbf{Solidez}: hueca o sólida
 \end{itemize}
 
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.48\textwidth]{quarto_tablero.png}
+	\caption{Resumen visual del juego Quarto: tablero 4x4, piezas con atributos binarios, y condición de victoria.}
+	\label{fig:quarto}
+\end{figure}
+
+
 Así, por ejemplo, puede haber una pieza \textit{blanca, alta, cuadrada y hueca} y otra \textit{negra, baja, redonda y sólida}; todas las 16 combinaciones posibles aparecen exactamente una vez \cite{muller2009}. Al inicio, la bolsa contiene las 16 piezas, y el tablero está vacío.
 
 Los jugadores alternan turnos con una dinámica de "corte y elige": en cada movimiento un jugador \textbf{elige} una pieza disponible y el oponente la \textbf{coloca} en cualquier casilla vacía \cite{santana2012}. Es decir, un turno consta de dos fases: primero se coloca la pieza que quedó "activa" del turno anterior, y luego se selecciona la siguiente pieza que el rival deberá colocar.
 
 Gana el jugador que, al colocar una pieza, completa una línea (horizontal, vertical o diagonal) de cuatro piezas que compartan al menos un atributo. Si el tablero se llena sin que nadie logre esto, la partida termina en empate \cite{muller2009}.
 
+
+
 La complejidad combinatoria del Quarto es muy elevada: se estima en torno a $(16!)^2 \approx 4.4 \times 10^{26}$ partidas posibles si se considerara el espacio completo sin podas \cite{santana2012}. Esta cifra incluye todas las secuencias de elección y colocación de piezas (sin contar simetrías), lo que hace inabarcable una búsqueda exhaustiva del espacio completo.
+
+
 
 \section{Representación Simbólica}
 
 La representación de la realidad para el agente se basa en un \textbf{modelo simbólico} que capture el estado del juego.
+
+
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.95\linewidth]{img/representacion-realidad.png}
+	\caption{Representación de la realidad para el agente inteligente en el juego Quarto. Se observa la secuencia: entorno físico, percepción mediante sensor, procesamiento de imagen, construcción del estado simbólico y ejecución de la acción física.}
+	\label{fig:representacion_realidad}
+\end{figure}
 
 \subsection{Modelo de Tablero}
 El tablero se representa como una matriz 4×4 de casillas. Cada casilla puede estar vacía o contener una pieza identificada por un código único (1–16).
@@ -85,6 +107,10 @@ El estado del juego incluye:
 \subsection{Percepción y Procesamiento}
 El agente utiliza un sensor (por ejemplo, una cámara) para leer la disposición real de piezas en el tablero y su identificación. Mediante técnicas de visión por computador, el agente clasifica color y forma, y deduce el identificador de cada pieza física.
 
+
+
+
+
 \section{Definición Ontológica}
 
 La definición ontológica describe los elementos esenciales del dominio \textbf{Quarto}, sus relaciones y restricciones.
@@ -92,7 +118,7 @@ La definición ontológica describe los elementos esenciales del dominio \textbf
 \subsection{Conceptos Principales}
 
 \begin{itemize}
-\item \textbf{Pieza}: Objeto con los atributos $\{color, tamaño, forma, solidez\}$. Cada combinación binaria es única.
+\item \textbf{Pieza}: Objeto con los atributos $\{\text{color}, \text{tamaño}, \text{forma}, \text{solidez}\}$. Cada combinación binaria es única.
 \item \textbf{Casilla}: Posición del tablero identificada por coordenadas $(fila, columna)$ con valores del 1 al 4.
 \item \textbf{Tablero}: Conjunto de 16 casillas organizadas en forma matricial 4×4.
 \item \textbf{Jugador}: Actor que realiza alternadamente dos acciones: \textit{colocar} una pieza y \textit{elegir} la próxima pieza para el rival.
@@ -109,6 +135,15 @@ La definición ontológica describe los elementos esenciales del dominio \textbf
 \item \textbf{pieza-activa(pieza)}: Identifica la pieza que debe colocarse en el turno actual.
 \end{itemize}
 
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.95\linewidth]{img/diagrama-secuencia.png}
+	\caption{Diagrama de secuencia para las primeras jugadas del juego Quarto entre Jugador 1 y Jugador 2. Se observa la interacción de elección y colocación de piezas en el tablero, con estado parcial al finalizar.}
+	\label{fig:secuencia_quarto}
+\end{figure}
+
+
 \subsection{Restricciones del Dominio}
 
 \begin{itemize}
@@ -122,6 +157,14 @@ La definición ontológica describe los elementos esenciales del dominio \textbf
 \section{Diseño del Agente de Búsqueda}
 
 El agente inteligente se estructura en tres bloques principales: \textbf{Percepción}, \textbf{Razonamiento (Búsqueda Adversarial)} y \textbf{Acción}.
+
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.95\linewidth]{img/diagrama-busqueda.png}
+	\caption{Diagrama de flujo del agente inteligente para el juego Quarto, estructurado en tres fases: Percepción, Planificación y Acción. Se detalla el ciclo de lectura del entorno físico, razonamiento con poda Alfa-Beta y ejecución de acciones físicas.}
+	\label{fig:diagrama_busqueda}
+\end{figure}
 
 \subsection{Percepción del Estado}
 
@@ -161,13 +204,24 @@ donde $W$ suma puntajes parciales de líneas de 3 piezas con atributos compartid
 
 \subsection{Selección de Pieza para el Oponente}
 
+
+
 Después de colocar la pieza en la mejor casilla, el agente debe seleccionar la siguiente pieza que dará al rival:
+
 
 \begin{enumerate}
 \item \textbf{Evaluar cada pieza restante}: Para cada pieza $p$ en la lista de disponibles, simular que el oponente la coloca en las mejores casillas posibles para él.
 \item \textbf{Escoger pieza "segura"}: Entre las piezas que no permiten victoria inmediata al rival, seleccionar la que minimice las oportunidades futuras del oponente \cite{santana2012}.
 \item \textbf{Asignar pieza activa}: La pieza seleccionada se marca como la nueva pieza activa para el oponente.
 \end{enumerate}
+
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.95\linewidth]{img/asignar-pieza.png}
+	\caption{Subproceso para seleccionar la próxima pieza.}
+	\label{fig:asignar_pieza}
+\end{figure}
 
 \subsection{Ejecución Física de la Acción}
 
