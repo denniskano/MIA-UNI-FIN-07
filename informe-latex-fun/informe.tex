@@ -77,7 +77,7 @@ La complejidad combinatoria del Quarto es muy elevada: se estima en torno a $(16
 
 
 
-\section{Representación Simbólica}
+\section{Representación De La Realidad}
 
 La representación de la realidad para el agente se basa en un \textbf{modelo simbólico} que capture el estado del juego.
 
@@ -90,8 +90,8 @@ La representación de la realidad para el agente se basa en un \textbf{modelo si
 	\label{fig:representacion_realidad}
 \end{figure}
 
-\subsection{Modelo de Tablero}
-El tablero se representa como una matriz 4×4 de casillas. Cada casilla puede estar vacía o contener una pieza identificada por un código único (1–16).
+	\subsection{Modelo de Tablero}
+	El tablero se representa como una matriz 4×4 de casillas. Cada casilla puede estar vacía o contener una pieza identificada por un código único (1–16).
 
 \subsection{Codificación de Piezas}
 Cada pieza se codifica como un vector de 4 bits (uno por cada atributo: color, tamaño, forma, solidez), o bien como un identificador de objeto que contenga esas propiedades. Los 16 identificadores (p. ej., P1, P2, …, P16) corresponden a las 16 combinaciones binarias posibles \cite{muller2009}.
@@ -143,16 +143,54 @@ La definición ontológica describe los elementos esenciales del dominio \textbf
 	\label{fig:secuencia_quarto}
 \end{figure}
 
+\subsection{Atributos o Propiedades}
+\begin{enumerate}
+	
+\item \textbf{De las Piezas:}
+	\begin{itemize}
+		\item \textbf{Color:} Claro / Oscuro
+		\item \textbf{Color:} Oscuro
+		\item \textbf{Altura:} Alto / Bajo
+		\item \textbf{Forma:} Redonda / Cuadrada
+		\item \textbf{Solidez:} Hueca / Sólida
+	\end{itemize}
+
+	\item \textbf{Del Tablero:}
+	\begin{itemize}
+		\item \textbf{Tamaño:}  4x4 (16 casillas)
+		\item \textbf{Delimitado:} Sí, espacio fijo
+	\end{itemize}
+
+	\item \textbf{Del Turno:}
+	\begin{itemize}
+		\item \textbf{Número de turno}
+		\item \textbf{Jugador activo}
+		\item \textbf{Pieza colocada}
+		\item \textbf{Casilla ocupada}
+	\end{itemize}
+\end{enumerate}
+
 
 \subsection{Restricciones del Dominio}
 
 \begin{itemize}
-\item Cada \textbf{Pieza} solo puede ser "disponible" o "ocupa" una única casilla, nunca dos.
+\item Cada \textbf{Pieza} solo puede ser ``disponible'' u ``ocupa'' una única casilla, nunca dos.
 \item Una \textbf{Casilla} solo puede contener a lo sumo una pieza.
 \item No puede haber dos piezas idénticas en el juego (las 16 combinaciones son disjuntas).
 \item Al finalizar un turno, \texttt{pieza-activa} cambia a otra pieza que el jugador elige para el rival.
 \item \textbf{Condición de victoria}: existe al menos una línea de cuatro casillas contiguas (horizontal, vertical o diagonal) que contengan piezas con un atributo binario idéntico \cite{muller2009}.
 \end{itemize}
+
+\subsection{Consideraciones adicionales}
+\begin{itemize}
+
+		\item El \textbf{espacio} de trabajo está previamente delimitado (tablero 4x4).
+		\item El juego es de información completa: ambos \textbf{jugadores} ven todas las \textbf{piezas} y el \textbf{tablero}.
+		\item \textbf{No hay elementos aleatorios} ni ocultos.
+		\item La estrategia se basa en \textbf{anticipación, análisis de patrones y control del turno}.
+
+\end{itemize}
+
 
 \section{Diseño del Agente de Búsqueda}
 
@@ -166,13 +204,60 @@ El agente inteligente se estructura en tres bloques principales: \textbf{Percepc
 	\label{fig:diagrama_busqueda}
 \end{figure}
 
+\subsection{Tipo de Agente}
+\begin{itemize}
+	\item \textbf{Proactivo:} El agente anticipa posibles jugadas del oponente y planifica en consecuencia.
+	\item \textbf{Basado en utilidad:} Evalúa el estado del tablero y selecciona acciones que maximizan su probabilidad de victoria.
+\end{itemize}
+
+\subsection{Medio Ambiente}
+\begin{itemize}
+	\item \textbf{Accesible:} El agente tiene acceso completo a toda la información del tablero y las piezas son visibles.
+	\item \textbf{Determinista:} Las acciones tienen resultados predecibles.
+	\item \textbf{No Episódico:} Las decisiones actuales dependen de estados anteriores.
+	\item \textbf{Estático:} El entorno no cambia mientras el agente decide.
+	\item \textbf{Discreto:} El número de piezas, casillas y turnos es finito y contable.
+\end{itemize}
+
+\subsection{Sensores}
+
+El agente puede utilizar una cámara para capturar una imagen del estado actual del tablero, y luego procesar esta imagen utilizando técnicas de visión por computadora para obtener la siguiente información:
+
+\begin{itemize}
+	\item \textbf{Posición de las piezas:} Identificación de las casillas ocupadas por las piezas, a partir de la imagen capturada.
+	\item \textbf{Características de las piezas:} Reconocimiento de color, forma, altura y textura.
+	\item \textbf{Estado de las casillas:} Detección de casillas vacías o ocupadas.
+	\item \textbf{Análisis de patrones:} Identificación de posibles alineaciones de piezas y predicción de jugadas futuras.
+\end{itemize}
+
+\subsection{Percepciones}
+
+\begin{itemize}
+	\item \textbf{Frecuencia de muestreo:} Cada turno.
+	\item \textbf{Número de canales:} 3 (tablero, pieza recibida, piezas disponibles).
+	\item \textbf{Dimensiones:} 4x4 para el tablero, 1 para la pieza recibida, hasta 16 para piezas disponibles.
+	\item \textbf{Excepciones:} Error si se recibe una pieza ya jugada o si se intenta colocar en una casilla ocupada.
+\end{itemize}
+
 \subsection{Percepción del Estado}
 
 \begin{enumerate}
 \item \textbf{Leer tablero físico}: Capturar imagen o leer sensor que detecta las 16 casillas.
-\item \textbf{Procesar imagen y detectar piezas}: Clasificar cada casilla como "vacía" o "ocupada" y, si está ocupada, identificar atributos para asignar el código de pieza correcto \cite{muller2009}.
+\item \textbf{Procesar imagen y detectar piezas}: Clasificar cada casilla como ``vacía'' u ``ocupada'' y, si está ocupada, identificar atributos para asignar el código de pieza correcto \cite{muller2009}.
 \item \textbf{Convertir a estado simbólico}: Actualizar la matriz 4×4 y la lista de piezas no jugadas.
 \end{enumerate}
+
+\subsection{Espacio de Estados}
+
+Número de estados posibles:
+
+	\begin{itemize}
+		\item 16 piezas $\rightarrow$ 16! formas de jugarlas.
+		\item 16 posiciones en el tablero $\rightarrow$ 16! formas de colocarlas.
+		\item Total, aproximado: $(16!)^2 \approx 2.6 \times 10^{36}$ estados posibles.
+	\end{itemize}
+
+Esto refleja la complejidad combinatoria del juego.
 
 \subsection{Generación de Jugadas Posibles}
 
